@@ -251,38 +251,132 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
-    <script>
-    // 🧠 FUNGSI AMBIL DATA UNTUK SAPI 1
-    function getSapi1Data() {
-        fetch('/gy87/prilaku') // sensor GY-87
-            .then(res => res.json())
-            .then(data => {
-                document.getElementById('statusAktivitas1').innerText = data.status_aktivitas || '--';
-                document.getElementById('prilaku1').innerText = data.prilaku || '--';
-            })
-            .catch(err => console.error(err));
-    }
+<script>
+// ==========================
+//  🔥 SHOW LOADING EFFECT
+// ==========================
+function showLoading(elementId) {
+    document.getElementById(elementId).innerHTML = 
+        '<div class="loading-skeleton" style="height:20px;width:60px;margin:0 auto;"></div>';
+}
 
-    // 🧠 FUNGSI AMBIL DATA UNTUK SAPI 2
-    function getSapi2Data() {
-        fetch('/sensor/prilaku') // sensor MPU6050
-            .then(res => res.json())
-            .then(data => {
-                document.getElementById('statusAktivitas2').innerText = data.status_aktivitas || '--';
-                document.getElementById('prilaku2').innerText = data.prilaku || '--';
-            })
-            .catch(err => console.error(err));
-    }
+// ==========================
+//  🔥 LOAD SENSOR LINGKUNGAN
+// ==========================
+function loadSensorData() {
+    showLoading('nh3');
+    showLoading('co');
+    showLoading('temp');
+    showLoading('humidity');
+    showLoading('cahaya');
 
-    // auto-update setiap 5 detik
-    setInterval(() => {
-        getSapi1Data();
-        getSapi2Data();
-    }, 5000);
+    $.getJSON("/sensor/latest", function(data) {
+        $("#nh3").text(parseFloat(data.nh3).toFixed(2));
+        $("#co").text(parseFloat(data.co).toFixed(2));
+        $("#temp").text(parseFloat(data.temperature).toFixed(1));
+        $("#humidity").text(parseFloat(data.humidity).toFixed(1));
+        $("#cahaya").text(parseFloat(data.cahaya).toFixed(1));
+    }).fail(() => {
+        $("#nh3, #co, #temp, #humidity, #cahaya").text("--");
+    });
+}
 
-    // muat pertama kali
-    getSapi1Data();
-    getSapi2Data();
+// ==========================
+// 🔥 THI CALCULATOR
+// ==========================
+function loadTHI() {
+    showLoading('thiValue');
+    showLoading('thiStatus');
+
+    $.getJSON("/sensor/latest", function(data) {
+        let t = parseFloat(data.temperature);
+        let h = parseFloat(data.humidity);
+
+        if (isNaN(t) || isNaN(h)) {
+            $("#thiValue").text("--");
+            $("#thiStatus").text("--");
+            return;
+        }
+
+        let thi = (1.8 * t + 32) - (0.55 - 0.0055 * h) * (1.8 * t - 26);
+        thi = thi.toFixed(1);
+
+        $("#thiValue").text(thi);
+
+        let status = "";
+        let color = "";
+
+        if (thi < 72) { status = "Nyaman"; color = "#28a745"; }
+        else if (thi < 78) { status = "Stres Ringan"; color = "#ffc107"; }
+        else if (thi < 89) { status = "Stres Sedang"; color = "#fd7e14"; }
+        else { status = "Stres Berat"; color = "#dc3545"; }
+
+        $("#thiStatus").text(status).css("color", color);
+
+    }).fail(() => {
+        $("#thiValue").text("--");
+        $("#thiStatus").text("--");
+    });
+}
+
+// ==========================
+// 🔥 PERILAKU SAPI 1 (GY87)
+// ==========================
+function loadSapi1() {
+    fetch("/gy87/prilaku")
+        .then(r => r.json())
+        .then(d => {
+            $("#statusAktivitas1").text(d.status_aktivitas || "--");
+            $("#prilaku1").text(d.prilaku || "--");
+        })
+        .catch(() => {
+            $("#statusAktivitas1, #prilaku1").text("--");
+        });
+}
+
+// ==========================
+// 🔥 PERILAKU SAPI 2 (MPU6050)
+// ==========================
+function loadSapi2() {
+    fetch("/sensor/prilaku")
+        .then(r => r.json())
+        .then(d => {
+            $("#statusAktivitas2").text(d.status_aktivitas || "--");
+            $("#prilaku2").text(d.prilaku || "--");
+        })
+        .catch(() => {
+            $("#statusAktivitas2, #prilaku2").text("--");
+        });
+}
+
+// ==========================
+// 🔥 AUTO REFRESH SEMUA 5s
+// ==========================
+function refreshAll() {
+    loadSensorData();
+    loadTHI();
+    loadSapi1();
+    loadSapi2();
+}
+
+refreshAll();
+setInterval(refreshAll, 5000);
+
+// ==========================
+// 🔥 SMOOTH SCROLL
+// ==========================
+document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+    anchor.addEventListener('click', function (e) {
+        e.preventDefault();
+        const target = document.querySelector(this.getAttribute('href'));
+        if (target) {
+            target.scrollIntoView({
+                behavior: 'smooth',
+                block: 'start'
+            });
+        }
+    });
+});
 </script>
 
 <style>
@@ -297,122 +391,6 @@
 }
 </style>
 
-    <script>
-    function showLoading(elementId) {
-        document.getElementById(elementId).innerHTML = '<div class="loading-skeleton" style="height: 20px; width: 60px; margin: 0 auto;"></div>';
-    }
-
-    function loadSensorData() {
-        showLoading('nh3');
-        showLoading('co');
-        showLoading('temp');
-        showLoading('humidity');
-        showLoading('cahaya');
-
-        $.getJSON("/sensor/latest", function(data) {
-            $("#nh3").text(parseFloat(data.nh3).toFixed(2));
-            $("#co").text(parseFloat(data.co).toFixed(2));
-            $("#temp").text(parseFloat(data.temperature).toFixed(1));
-            $("#humidity").text(parseFloat(data.humidity).toFixed(1));
-            $("#cahaya").text(parseFloat(data.cahaya).toFixed(1));
-        }).fail(function() {
-            console.log("Gagal mengambil data sensor");
-            $("#nh3").text("--");
-            $("#co").text("--");
-            $("#temp").text("--");
-            $("#humidity").text("--");
-            $("#cahaya").text("--");
-        });
-    }
-
-    function loadPerilakuSapi() {
-        showLoading('statusAktivitas');
-        showLoading('prilaku');
-        showLoading('deviceTemp');
-
-        $.getJSON("/sensor/prilaku", function(data) {
-            console.log(data);
-            $("#statusAktivitas").text(data.status_aktivitas || '--');
-            $("#prilaku").text(data.prilaku || '--');
-            $("#deviceTemp").text(data.temperature ? parseFloat(data.temperature).toFixed(1) : '--');
-        }).fail(function() {
-            console.log("Gagal ambil data perilaku sapi");
-            $("#statusAktivitas").text("--");
-            $("#prilaku").text("--");
-            $("#deviceTemp").text("--");
-        });
-    }
-
-    function loadTHI() {
-        showLoading('thiValue');
-        showLoading('thiStatus');
-
-        $.getJSON("/sensor/latest", function(data) {
-            let temp = parseFloat(data.temperature);
-            let humidity = parseFloat(data.humidity);
-
-            if (isNaN(temp) || isNaN(humidity)) {
-                $("#thiValue").text("--");
-                $("#thiStatus").text("--");
-                return;
-            }
-
-            // Formula THI
-            let thi = (1.8 * temp + 32) - (0.55 - 0.0055 * humidity) * (1.8 * temp - 26);
-            thi = thi.toFixed(1);
-            $("#thiValue").text(thi);
-
-            // Kategori Stres
-            let status = "";
-            let statusColor = "";
-            if (thi < 72) {
-                status = "Nyaman";
-                statusColor = "#28a745";
-            } else if (thi < 78) {
-                status = "Stres Ringan";
-                statusColor = "#ffc107";
-            } else if (thi < 89) {
-                status = "Stres Sedang";
-                statusColor = "#fd7e14";
-            } else {
-                status = "Stres Berat";
-                statusColor = "#dc3545";
-            }
-            
-            $("#thiStatus").text(status).css('color', statusColor);
-        }).fail(function() {
-            console.log("Gagal menghitung THI");
-            $("#thiValue").text("--");
-            $("#thiStatus").text("--");
-        });
-    }
-
-    // Initial load
-    loadSensorData();
-    loadPerilakuSapi();
-    loadTHI();
-
-    // Auto refresh every 5 seconds
-    setInterval(function() {
-        loadSensorData();
-        loadPerilakuSapi();
-        loadTHI();
-    }, 5000);
-
-    // Add smooth scroll behavior
-    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-        anchor.addEventListener('click', function (e) {
-            e.preventDefault();
-            const target = document.querySelector(this.getAttribute('href'));
-            if (target) {
-                target.scrollIntoView({
-                    behavior: 'smooth',
-                    block: 'start'
-                });
-            }
-        });
-    });
-    </script>
 
 </body>
 </html>
