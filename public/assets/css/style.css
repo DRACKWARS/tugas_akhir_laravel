@@ -1,0 +1,308 @@
+:root {
+    --primary-green: #2d5016;
+    --secondary-green: #4a7c59;
+    --accent-orange: #ff6b35;
+    --light-bg: #f8fffe;
+    --card-shadow: 0 8px 25px rgba(0,0,0,0.08);
+    --card-hover-shadow: 0 12px 35px rgba(0,0,0,0.12);
+}
+
+body {
+    background: linear-gradient(135deg, #e8f5e8 0%, #f0f8ff 100%);
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.navbar {
+    background: linear-gradient(135deg, var(--primary-green) 0%, var(--secondary-green) 100%) !important;
+    backdrop-filter: blur(10px);
+    box-shadow: 0 2px 20px rgba(0,0,0,0.1);
+}
+
+.navbar-brand {
+    font-size: 1.5rem;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+}
+
+.hero-section {
+    height: 350px;
+    background: linear-gradient(135deg, 
+        rgba(45, 80, 22, 0.8) 0%, 
+        rgba(74, 124, 89, 0.7) 50%,
+        rgba(255, 107, 53, 0.6) 100%),
+        url('/assets/img/gambar1.jpg') center/cover;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+}
+
+.hero-content {
+    text-align: center;
+    z-index: 2;
+    animation: fadeInUp 1s ease-out;
+}
+
+.hero-title {
+    font-size: 3rem;
+    font-weight: 800;
+    text-shadow: 3px 3px 6px rgba(0,0,0,0.5);
+    margin-bottom: 1rem;
+}
+
+.hero-subtitle {
+    font-size: 1.3rem;
+    font-weight: 300;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.section-card {
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 20px;
+    box-shadow: var(--card-shadow);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.section-card:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--card-hover-shadow);
+}
+
+.section-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, var(--secondary-green), var(--accent-orange));
+}
+
+.section-title {
+    font-weight: 700;
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.section-title i {
+    font-size: 2rem;
+}
+
+.environment-section {
+    background: linear-gradient(135deg, rgba(40, 167, 69, 0.05) 0%, rgba(40, 167, 69, 0.1) 100%);
+}
+
+.behavior-section {
+    background: linear-gradient(135deg, rgba(255, 193, 7, 0.05) 0%, rgba(255, 107, 53, 0.1) 100%);
+}
+
+.thi-section {
+    background: linear-gradient(135deg, rgba(220, 53, 69, 0.05) 0%, rgba(220, 53, 69, 0.1) 100%);
+}
+
+.thi-section::before {
+    background: linear-gradient(90deg, #dc3545, #fd7e14);
+}
+
+.sensor-card {
+    background: white;
+    border-radius: 15px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.06);
+    border: 1px solid rgba(0,0,0,0.05);
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+    height: 100%;
+    min-height: 180px;
+}
+
+.sensor-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.12);
+}
+
+.sensor-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: var(--gradient-bg);
+    transition: height 0.3s ease;
+}
+
+.sensor-card:hover::before {
+    height: 6px;
+}
+
+.sensor-value {
+    font-size: 3.5rem;
+    font-weight: 800;
+    line-height: 1;
+    margin-bottom: 0.3rem;
+    margin-top: 1rem;
+}
+
+.sensor-unit {
+    font-size: 1rem;
+    color: #6c757d;
+    font-weight: 600;
+    margin-bottom: 1.5rem;
+}
+
+.sensor-label {
+    color: #495057;
+    font-weight: 600;
+    font-size: 0.95rem;
+    margin-top: 0.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.sensor-label i {
+    font-size: 1.2rem;
+}
+
+.nh3-card { --gradient-bg: linear-gradient(90deg, #0d6efd, #6610f2); }
+.co-card { --gradient-bg: linear-gradient(90deg, #6c757d, #495057); }
+.temp-card { --gradient-bg: linear-gradient(90deg, #dc3545, #fd7e14); }
+.humidity-card { --gradient-bg: linear-gradient(90deg, #20c997, #28a745); }
+.light-card { --gradient-bg: linear-gradient(90deg, #ffc107, #fd7e14); }
+.activity-card { --gradient-bg: linear-gradient(90deg, #0dcaf0, #6f42c1); }
+.behavior-card { --gradient-bg: linear-gradient(90deg, #6f42c1, #d63384); }
+.device-temp-card { --gradient-bg: linear-gradient(90deg, #dc3545, #e83e8c); }
+.thi-value-card { --gradient-bg: linear-gradient(90deg, #dc3545, #fd7e14); }
+.thi-status-card { --gradient-bg: linear-gradient(90deg, #fd7e14, #ffc107); }
+
+.detail-btn {
+    background: linear-gradient(135deg, var(--secondary-green) 0%, var(--primary-green) 100%);
+    border: none;
+    border-radius: 12px;
+    padding: 12px 30px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(45, 80, 22, 0.2);
+}
+
+.detail-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(45, 80, 22, 0.3);
+    background: linear-gradient(135deg, var(--primary-green) 0%, var(--secondary-green) 100%);
+}
+
+.detail-btn.warning {
+    background: linear-gradient(135deg, var(--accent-orange) 0%, #ff8c42 100%);
+    box-shadow: 0 4px 15px rgba(255, 107, 53, 0.2);
+}
+
+.detail-btn.warning:hover {
+    background: linear-gradient(135deg, #ff8c42 0%, var(--accent-orange) 100%);
+    box-shadow: 0 6px 20px rgba(255, 107, 53, 0.3);
+}
+
+.detail-btn.danger {
+    background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+    box-shadow: 0 4px 15px rgba(220, 53, 69, 0.2);
+}
+
+.detail-btn.danger:hover {
+    background: linear-gradient(135deg, #c82333 0%, #bd2130 100%);
+    box-shadow: 0 6px 20px rgba(220, 53, 69, 0.3);
+}
+
+.detail-btn.primary {
+    background: linear-gradient(135deg, #355cdc 0%, #4923c8 100%);
+    box-shadow: 0 4px 15px rgba(84, 53, 220, 0.2);
+}
+
+.status-indicator {
+    display: inline-block;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: #28a745;
+    margin-right: 8px;
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0% { box-shadow: 0 0 0 0 rgba(40, 167, 69, 0.7); }
+    70% { box-shadow: 0 0 0 10px rgba(40, 167, 69, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(40, 167, 69, 0); }
+}
+
+.loading-skeleton {
+    background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+    background-size: 200% 100%;
+    animation: loading 1.5s infinite;
+    border-radius: 4px;
+}
+
+@keyframes loading {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+}
+
+.section-description {
+    color: #6c757d;
+    font-size: 1.1rem;
+    line-height: 1.6;
+    margin-bottom: 2rem;
+}
+
+.thi-title {
+    font-weight: 700;
+    color: #dc3545;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+}
+
+.thi-title i {
+    font-size: 2rem;
+    animation: fireFlicker 2s infinite;
+}
+
+@keyframes fireFlicker {
+    0%, 100% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(1.1); opacity: 0.8; }
+}
+
+footer {
+    background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+    box-shadow: 0 -4px 20px rgba(0,0,0,0.1);
+}
+
+@media (max-width: 768px) {
+    .hero-title {
+        font-size: 2rem;
+    }
+    .hero-subtitle {
+        font-size: 1.1rem;
+    }
+    .sensor-card {
+        margin-bottom: 1rem;
+    }
+}
