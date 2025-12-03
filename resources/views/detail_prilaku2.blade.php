@@ -185,7 +185,7 @@
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
-                <form action="{{ url('/insert_gy87') }}" method="POST">
+                <form action="{{ url('/insert_prilaku') }}" method="POST">
                     @csrf
                     <div class="row g-3">
                         <div class="col-md-4"><label>Accel X</label><input type="number" step="0.01" name="accel_x" class="form-control" required></div>
@@ -222,7 +222,7 @@
                 <i class="fas fa-trash-alt fa-3x text-danger mb-3"></i>
                 <h5>Yakin ingin menghapus data ini?</h5>
                 <p class="text-muted mb-4">Data dari <strong id="deleteDate"></strong> akan dihapus permanen.</p>
-                <form id="deleteForm" method="POST">@csrf @method('DELETE')
+                <form id="deleteForm" method="GET">
                     <div class="d-flex justify-content-center gap-2">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
                         <button type="submit" class="btn btn-danger">Ya, Hapus</button>
@@ -250,7 +250,7 @@ document.addEventListener('DOMContentLoaded', function() {
     deleteButtons.forEach(btn=>{
         btn.addEventListener('click',()=>{
             deleteDate.textContent = btn.dataset.date;
-            deleteForm.action = `/gy87/${btn.dataset.id}`;
+            deleteForm.action = `/delete_prilaku/${btn.dataset.id}`;
         });
     });
 

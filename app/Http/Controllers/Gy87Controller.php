@@ -15,6 +15,14 @@ class Gy87Controller extends Controller
         return view('detail_prilaku2', compact('gy87'));
     }
 
+    public function delete_prilaku($id)
+    {
+        $data = Gy87::findOrFail($id);
+        $data->delete();
+
+        return redirect()->back()->with('success', 'Data berhasil dihapus.');
+    }
+
     // ===== SIMPAN DATA DARI ESP8266 =====
     public function store(Request $request)
     {
@@ -33,8 +41,29 @@ class Gy87Controller extends Controller
             'pressure'    => $request->input('pressure'),
         ]);
 
+        // return redirect()->back()->with('success', 'Data GY-87 berhasil ditambahkan!');
         return response()->json(['status' => 'ok', 'message' => 'Data GY-87 tersimpan!']);
     }
+
+    public function insert_prilaku(Request $request)
+    {
+        Gy87::create([
+            'accel_x'     => $request->accel_x,
+            'accel_y'     => $request->accel_y,
+            'accel_z'     => $request->accel_z,
+            'gyro_x'      => $request->gyro_x,
+            'gyro_y'      => $request->gyro_y,
+            'gyro_z'      => $request->gyro_z,
+            'mag_x'       => $request->mag_x,
+            'mag_y'       => $request->mag_y,
+            'mag_z'       => $request->mag_z,
+            'temperature' => $request->temperature,
+            'pressure'    => $request->pressure,
+        ]);
+
+        return redirect()->back()->with('success', 'Data GY-87 berhasil ditambahkan!');
+    }
+
 
     // ===== AMBIL DATA TERBARU =====
     public function latest()

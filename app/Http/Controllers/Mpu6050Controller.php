@@ -14,7 +14,7 @@ class Mpu6050Controller extends Controller
         return view('detail_prilaku', compact('mpuData'));
     }
 
-    public function destroy($id)
+    public function delete_prilaku($id)
     {
         $data = Mpu6050::findOrFail($id);
         $data->delete();

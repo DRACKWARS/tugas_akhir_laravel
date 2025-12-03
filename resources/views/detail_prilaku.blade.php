@@ -282,18 +282,16 @@
                     <h5 class="mb-3">Apakah Anda yakin ingin menghapus data ini?</h5>
                     <p class="text-muted mb-4">Data dari <strong id="deleteDate"></strong> akan dihapus secara permanen.</p>
 
-                    <form id="deleteForm" method="POST">
-                        @csrf
-                        @method('DELETE')
-                        <div class="d-flex justify-content-center gap-2">
-                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                                <i class="fas fa-times me-2"></i> Batal
-                            </button>
-                            <button type="submit" class="btn btn-danger">
-                                <i class="fas fa-trash-alt me-2"></i> Ya, Hapus
-                            </button>
-                        </div>
-                    </form>
+                    <form id="deleteForm" method="GET">
+                    <div class="d-flex justify-content-center gap-2">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                            <i class="fas fa-times me-2"></i> Batal
+                        </button>
+                        <button type="submit" class="btn btn-danger">
+                            <i class="fas fa-trash-alt me-2"></i> Ya, Hapus
+                        </button>
+                    </div>
+                </form>
                 </div>
             </div>
         </div>
@@ -309,24 +307,23 @@
     </footer>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script>\
+    <script>
 
         // Handle delete button click
-        document.addEventListener('DOMContentLoaded', function() {
-            const deleteButtons = document.querySelectorAll('.btn-delete');
-            const deleteForm = document.getElementById('deleteForm');
-            const deleteDate = document.getElementById('deleteDate');
+            document.addEventListener('DOMContentLoaded', function () {
+                const deleteButtons = document.querySelectorAll('.btn-delete');
+                const deleteForm = document.getElementById('deleteForm');
+                const deleteDate = document.getElementById('deleteDate');
 
-            deleteButtons.forEach(button => {
-                button.addEventListener('click', function() {
-                    const id = this.getAttribute('data-id');
-                    const date = this.getAttribute('data-date');
-                    
-                    // Update modal content
-                    deleteDate.textContent = date;
-                    
-                    // Update form action
-                    deleteForm.action = `/mpu/${id}`;
+                deleteButtons.forEach(button => {
+                    button.addEventListener('click', function () {
+                        const id = this.getAttribute('data-id');
+                        const date = this.getAttribute('data-date');
+
+                        deleteDate.textContent = date;
+
+                        deleteForm.action = "/delete_prilaku/" + id;
+                    });
                 });
             });
 
@@ -352,7 +349,6 @@
                     showLoading();
                 });
             });
-        });
 
         // Add smooth scrolling
         document.querySelectorAll('a[href^="#"]').forEach(anchor => {
