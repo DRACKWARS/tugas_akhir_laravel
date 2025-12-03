@@ -322,7 +322,7 @@
 
                         deleteDate.textContent = date;
 
-                        deleteForm.action = "/delete_prilaku/" + id;
+                        deleteForm.action = "/delete_mpu/" + id;
                     });
                 });
             });

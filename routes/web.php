@@ -13,7 +13,7 @@ Route::get('/sensor/all', [SensorController::class, 'getAllData']);
 Route::post('/insert_sensor', [SensorController::class, 'insert'])->name('insert_sensor');
 Route::delete('/sensor/{id}', [SensorController::class, 'destroy'])->name('sensor.destroy');
 Route::post('/insert_mpu', [Mpu6050Controller::class, 'insert'])->name('insert_mpu');
-Route::delete('/mpu/{id}', [Mpu6050Controller::class, 'destroy']);
+
 
 // ✅ API untuk sensor
 Route::post('/sensor', [SensorController::class, 'store']);
@@ -23,7 +23,7 @@ Route::get('/sensor/latest', [SensorController::class, 'latest']);
 Route::get('/detail_prilaku', [Mpu6050Controller::class, 'detail_prilaku'])->name('detail_prilaku');
 Route::post('/mpu6050', [Mpu6050Controller::class, 'store']);
 Route::get('/sensor/prilaku', [Mpu6050Controller::class, 'prilaku']);
-Route::get('/delete_prilaku/{id}', [Mpu6050Controller::class, 'delete_prilaku']);
+Route::get('/delete_mpu/{id}', [Mpu6050Controller::class, 'delete_prilaku'])->name('delete_mpu');
 
 // ✅ API untuk perilaku sapi (GY-87)
 Route::post('/gy87', [Gy87Controller::class, 'store']);
