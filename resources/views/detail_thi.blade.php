@@ -9,6 +9,7 @@
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link href="{{ asset('assets/css/styleT.css') }}" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 </head>
 <body>
 
@@ -138,11 +139,16 @@
         <div class="main-card">
             <div class="card-body p-0">
                 
-                <div class="card-header-custom">
+                <div class="card-header-custom d-flex justify-content-between align-items-center">
                     <h4 class="mb-0 text-danger">
                         <i class="fas fa-table me-2"></i>
                         Tabel Data Historis Indeks THI
                     </h4>
+                    <div class="d-flex gap-2">
+                        <button class="btn btn-add-data" onclick="downloadExcel()">
+                            <i class="fas fa-file-excel"></i> Export Excel
+                        </button>
+                    </div>
                 </div>
 
                 <div class="table-responsive">
@@ -191,6 +197,44 @@
     </footer>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+            <script>
+            function downloadExcel() {
+                let rows = [];
+                let table = document.querySelectorAll("#thiTable tr");
+
+                table.forEach((tr, i) => {
+                    let row = [];
+                    let cells = tr.querySelectorAll("th, td");
+
+                    cells.forEach(td => {
+                        if (td.getAttribute("data-export") === "datetime") {
+                            row.push({ v: td.innerText, t: "s" }); // paksa Excel baca sebagai string
+                        } else {
+                            row.push(td.innerText);
+                        }
+                    });
+
+                    rows.push(row);
+                });
+
+                let sheet = XLSX.utils.aoa_to_sheet(rows);
+
+                // Format semua kolom datetime sebagai TEXT ("@")
+                Object.keys(sheet).forEach(cell => {
+                    if (sheet[cell].v && typeof sheet[cell].v === "string" && sheet[cell].v.includes(":")) {
+                        sheet[cell].t = "s";
+                        sheet[cell].z = "@";
+                    }
+                });
+
+                let workbook = XLSX.utils.book_new();
+                XLSX.utils.book_append_sheet(workbook, sheet, "Data THI");
+
+                XLSX.writeFile(workbook, "data_sensor_thi.xlsx");
+            }
+
+            </script>
     
     <script>
         function hitungTHI(temp, hum) {
@@ -267,7 +311,7 @@
                     let row = `
                         <tr>
                             <td class="fw-bold text-muted">${index + 1}</td>
-                            <td class="text-muted">${item.created_at}</td>
+                            <td class="text-muted" data-export="datetime">${item.created_at}</td>
                             <td><span class="sensor-value text-danger">${temp.toFixed(1)}</span></td>
                             <td><span class="sensor-value text-success">${hum.toFixed(1)}</span></td>
                             <td><span class="sensor-value fw-bold" style="color: #dc3545;">${thi.toFixed(1)}</span></td>

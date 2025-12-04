@@ -8,6 +8,7 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link href="{{ asset('assets/css/styleP.css') }}" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 </head>
 <body>
 
@@ -88,11 +89,14 @@
                         <button class="btn btn-add-data" data-bs-toggle="modal" data-bs-target="#addDataModal">
                             <i class="fas fa-plus-circle me-2"></i> Tambah Data
                         </button>
+                        <button class="btn btn-success" onclick="downloadExcel()">
+                            <i class="fas fa-file-excel"></i> Export Excel
+                        </button>
                     </div>
                 </div>
 
                 <div class="table-responsive">
-                    <table class="table table-hover mb-0 data-table">
+                    <table id="tableMPU6050" class="table table-hover mb-0 data-table">
                         <thead>
                             <tr>
                                 <th><i class="fas fa-hashtag me-1"></i>No</th>
@@ -132,7 +136,7 @@
 
                                 <tr>
                                     <td class="fw-bold text-muted">{{ $mpuData->firstItem() + $index }}</td>
-                                    <td class="text-muted">{{ $data->created_at->format('Y-m-d H:i:s') }}</td>
+                                    <td data-export="text">{{ $data->created_at->format('Y-m-d') }} | {{ $data->created_at->format('H:i:s') }}</td>
                                     <td class="sensor-value text-primary">{{ number_format($data->accel_x, 2) }}</td>
                                     <td class="sensor-value text-primary">{{ number_format($data->accel_y, 2) }}</td>
                                     <td class="sensor-value text-primary">{{ number_format($data->accel_z, 2) }}</td>
@@ -307,6 +311,23 @@
     </footer>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+    function downloadExcel() {
+        let table = document.getElementById("tableMPU6050");
+
+        // Clone table supaya bisa memodifikasi tanpa merusak tampilan web
+        let clonedTable = table.cloneNode(true);
+
+        // Semua kolom yang memiliki atribut data-export="text" dipaksa menjadi teks
+        clonedTable.querySelectorAll("[data-export='text']").forEach(td => {
+            td.innerText = "'" + td.innerText; // tambahkan prefix ' agar Excel tidak convert
+        });
+
+        // Generate Excel file
+        let workbook = XLSX.utils.table_to_book(clonedTable, { sheet: "Data MPU6050" });
+        XLSX.writeFile(workbook, "data_sensor_mpu6050.xlsx");
+    }
+    </script>
     <script>
 
         // Handle delete button click

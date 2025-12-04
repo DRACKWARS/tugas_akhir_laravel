@@ -8,6 +8,7 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link href="{{ asset('assets/css/styleD.css') }}" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 </head>
 <body>
 
@@ -92,13 +93,18 @@
                         <i class="fas fa-database text-success me-2"></i>
                         Data Sensor Real-Time
                     </h4>
-                    <button class="btn btn-add-data" data-bs-toggle="modal" data-bs-target="#addSensorModal">
-                        <i class="fas fa-plus-circle me-2"></i> Tambah Data
-                    </button>
+                    <div class="d-flex gap-2">
+                        <button class="btn btn-add-data" data-bs-toggle="modal" data-bs-target="#addSensorModal">
+                            <i class="fas fa-plus-circle me-2"></i> Tambah Data
+                        </button>
+                        <button class="btn btn-add-data" onclick="downloadExcel()">
+                            <i class="fas fa-file-excel"></i> Export Excel
+                        </button>
+                    </div>
                 </div>
 
                 <div class="table-responsive">
-                    <table class="table table-hover mb-0 data-table">
+                    <table id="tableLINGKUNGAN" class="table table-hover mb-0 data-table">
                         <thead>
                             <tr>
                                 <th><i class="fas fa-hashtag me-2"></i>No</th>
@@ -151,7 +157,7 @@
                             @endphp
                             <tr>
                                 <td class="fw-bold text-muted">{{ $sensors->firstItem() + $index }}</td>
-                                <td class="text-muted">{{ $sensor->created_at }}</td>
+                                <td data-export="text">{{ $sensor->created_at->format('Y-m-d') }} | {{ $sensor->created_at->format('H:i:s') }}</td>
                                 <td><span class="sensor-value text-primary">{{ $sensor->nh3 }}</span></td>
                                 <td><span class="sensor-value text-secondary">{{ $sensor->co }}</span></td>
                                 <td><span class="sensor-value text-danger">{{ $sensor->temperature }}</span></td>
@@ -300,6 +306,23 @@
     </footer>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+        <script>
+        function downloadExcel() {
+            let table = document.getElementById("tableLINGKUNGAN");
+
+            // Clone table supaya bisa memodifikasi tanpa merusak tampilan web
+            let clonedTable = table.cloneNode(true);
+
+            // Semua kolom yang memiliki atribut data-export="text" dipaksa menjadi teks
+            clonedTable.querySelectorAll("[data-export='text']").forEach(td => {
+                td.innerText = "'" + td.innerText; // tambahkan prefix ' agar Excel tidak convert
+            });
+
+            // Generate Excel file
+            let workbook = XLSX.utils.table_to_book(clonedTable, { sheet: "Data LINGKUNGAN" });
+            XLSX.writeFile(workbook, "data_sensor_lingkungan.xlsx");
+        }
+        </script>
     <script>
         // Data dari Laravel
         const labels = @json($sensors->pluck('created_at')->map(fn($d) => $d->format('H:i')));

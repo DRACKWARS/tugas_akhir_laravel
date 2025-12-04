@@ -7,6 +7,23 @@
     --card-hover-shadow: 0 12px 35px rgba(0,0,0,0.12);
 }
 
+.btn-add-data {
+    background: linear-gradient(135deg, #ff1100 0%, #f90000 100%);
+    border: none;
+    border-radius: 12px;
+    padding: 10px 20px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(255, 0, 0, 0.2);
+    color: white;
+}
+
+.btn-add-data:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(237, 0, 0, 0.3);
+    color: white;
+}
+
 body {
     background: linear-gradient(135deg, #ffe8e8 0%, #fff5f5 100%);
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
