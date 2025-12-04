@@ -103,56 +103,68 @@
                     <tbody>
                         @forelse($gy87 as $index => $data)
                             @php
-                                $accel = sqrt(pow($data->accel_x,2) + pow($data->accel_y,2) + pow($data->accel_z,2));
-                                $gyro  = sqrt(pow($data->gyro_x,2) + pow($data->gyro_y,2) + pow($data->gyro_z,2));
+                                // Hitung Magnitude (Total vector)
+                                $accel = sqrt(pow($data->accel_x, 2) + pow($data->accel_y, 2) + pow($data->accel_z, 2));
+                                $gyro  = sqrt(pow($data->gyro_x, 2) + pow($data->gyro_y, 2) + pow($data->gyro_z, 2));
+                                
+                                // Hitung Arah Kompas (Heading)
                                 $heading = atan2($data->mag_y, $data->mag_x) * (180 / M_PI);
                                 if ($heading < 0) $heading += 360;
 
-                                if ($accel < 0.15 && $gyro < 2) {
-                                    $status  = "Diam";
-                                    $prilaku = "Istirahat / Berbaring";
-                                    $badge   = "secondary";
-                                } elseif ($accel >= 0.15 && $accel < 0.5 && $gyro < 15) {
-                                    $status  = "Ringan";
-                                    $prilaku = "Berdiri / Mengunyah";
-                                    $badge   = "info";
-                                } elseif ($accel >= 0.5 && $gyro >= 15 && $gyro < 60) {
-                                    $status  = "Aktif";
-                                    $prilaku = "Berjalan / Bergerak";
-                                    $badge   = "success";
-                                } elseif ($gyro >= 60) {
+                                // LOGIKA BARU (LEBIH FLEKSIBEL)
+                                // 1. Cek Aktivitas Ekstrem (Lari/Gelisah) - Prioritas Gyro
+                                if ($gyro >= 60) {
                                     $status  = "Sangat Aktif";
                                     $prilaku = "Gelisah / Berlari";
                                     $badge   = "danger";
-                                } else {
-                                    $status  = "Tidak Teridentifikasi";
-                                    $prilaku = "Data tidak stabil";
-                                    $badge   = "warning";
+                                } 
+                                // 2. Cek Aktivitas Sedang (Jalan/Makan) - Gunakan OR (||)
+                                // Jika salah satu sensor mendeteksi gerakan signifikan, anggap aktif
+                                elseif ($accel >= 0.4 || $gyro >= 15) {
+                                    $status  = "Aktif";
+                                    $prilaku = "Berjalan / Bergerak";
+                                    $badge   = "success";
+                                } 
+                                // 3. Cek Aktivitas Ringan (Mengunyah/Berdiri)
+                                // Batas bawah diperkecil agar lebih sensitif mendeteksi gerakan kecil
+                                elseif ($accel >= 0.08 || $gyro >= 2) {
+                                    $status  = "Ringan";
+                                    $prilaku = "Berdiri / Mengunyah";
+                                    $badge   = "info";
+                                } 
+                                // 4. Sisanya pasti Diam
+                                else {
+                                    $status  = "Diam";
+                                    $prilaku = "Istirahat / Berbaring";
+                                    $badge   = "secondary";
                                 }
                             @endphp
+
                             <tr>
                                 <td>{{ $gy87->firstItem() + $index }}</td>
                                 <td>{{ $data->created_at->format('Y-m-d H:i:s') }}</td>
-                                <td class="text-primary">{{ number_format($data->accel_x,2) }}</td>
-                                <td class="text-primary">{{ number_format($data->accel_y,2) }}</td>
-                                <td class="text-primary">{{ number_format($data->accel_z,2) }}</td>
-                                <td class="text-info">{{ number_format($data->gyro_x,2) }}</td>
-                                <td class="text-info">{{ number_format($data->gyro_y,2) }}</td>
-                                <td class="text-info">{{ number_format($data->gyro_z,2) }}</td>
-                                <td class="text-success">{{ number_format($data->mag_x,2) }}</td>
-                                <td class="text-success">{{ number_format($data->mag_y,2) }}</td>
-                                <td class="text-success">{{ number_format($data->mag_z,2) }}</td>
-                                <td class="text-danger">{{ number_format($data->temperature,2) }}</td>
-                                <td>{{ number_format($data->pressure,2) }}</td>
+                                <td class="text-primary">{{ number_format($data->accel_x, 2) }}</td>
+                                <td class="text-primary">{{ number_format($data->accel_y, 2) }}</td>
+                                <td class="text-primary">{{ number_format($data->accel_z, 2) }}</td>
+                                <td class="text-info">{{ number_format($data->gyro_x, 2) }}</td>
+                                <td class="text-info">{{ number_format($data->gyro_y, 2) }}</td>
+                                <td class="text-info">{{ number_format($data->gyro_z, 2) }}</td>
+                                <td class="text-success">{{ number_format($data->mag_x, 2) }}</td>
+                                <td class="text-success">{{ number_format($data->mag_y, 2) }}</td>
+                                <td class="text-success">{{ number_format($data->mag_z, 2) }}</td>
+                                <td class="text-danger">{{ number_format($data->temperature, 2) }}</td>
+                                <td>{{ number_format($data->pressure, 2) }}</td>
+                                
                                 <td><span class="badge bg-{{ $badge }}">{{ $status }}</span></td>
                                 <td class="fw-bold">{{ $prilaku }}</td>
-                                <td>{{ round($heading,2) }}°</td>
+                                <td>{{ round($heading, 2) }}°</td>
+                                
                                 <td>
                                     <button class="btn btn-delete"
                                             data-bs-toggle="modal"
                                             data-bs-target="#deleteDataModal"
-                                            data-id="{{ $data->id }}"
-                                            data-date="{{ $data->created_at }}">
+                                            data-bs-id="{{ $data->id }}"
+                                            data-bs-date="{{ $data->created_at }}">
                                         <i class="fas fa-trash-alt me-1"></i> Hapus
                                     </button>
                                 </td>

@@ -10,7 +10,7 @@ class Gy87Controller extends Controller
 
     public function detail_prilaku2()
     {
-        // Ambil semua data perilaku sapi dan tampilkan dalam tabel
+        // Ambil data terbaru dengan pagination
         $gy87 = Gy87::latest()->paginate(10);
         return view('detail_prilaku2', compact('gy87'));
     }
@@ -26,6 +26,7 @@ class Gy87Controller extends Controller
     // ===== SIMPAN DATA DARI ESP8266 =====
     public function store(Request $request)
     {
+        // Validasi input sederhana (opsional tapi disarankan)
         $data = Gy87::create([
             'accel_x'     => $request->input('accel_x'),
             'accel_y'     => $request->input('accel_y'),
@@ -41,7 +42,6 @@ class Gy87Controller extends Controller
             'pressure'    => $request->input('pressure'),
         ]);
 
-        // return redirect()->back()->with('success', 'Data GY-87 berhasil ditambahkan!');
         return response()->json(['status' => 'ok', 'message' => 'Data GY-87 tersimpan!']);
     }
 
@@ -61,36 +61,39 @@ class Gy87Controller extends Controller
             'pressure'    => $request->pressure,
         ]);
 
-        return redirect()->back()->with('success', 'Data GY-87 berhasil ditambahkan!');
+        return redirect()->back()->with('success', 'Data GY-87 berhasil ditambahkan manually!');
     }
 
-
-    // ===== AMBIL DATA TERBARU =====
+    // ===== AMBIL DATA TERBARU (RAW JSON) =====
     public function latest()
     {
         $latest = Gy87::latest()->first();
 
         if (!$latest) {
-            return response()->json(['message' => 'Belum ada data sensor!']);
+            return response()->json(['message' => 'Belum ada data sensor!'], 404);
         }
 
         return response()->json($latest);
     }
 
-    // ===== LOGIKA DETEKSI PERILAKU SAPI =====
+    // ===== LOGIKA DETEKSI PERILAKU SAPI (API) =====
+    // Logika ini disamakan dengan Tampilan Blade agar konsisten
     public function prilaku()
     {
         $latest = Gy87::latest()->first();
 
         if (!$latest) {
             return response()->json([
-                'status_aktivitas' => '--',
+                'status_aktivitas' => 'Menunggu Data...',
                 'prilaku'          => '--',
                 'temperature'      => '--',
+                'bmp_temp'         => '--',
+                'pressure'         => '--',
+                'arah_gerak'       => '--',
             ]);
         }
 
-        // --- Hitung intensitas gerakan ---
+        // --- 1. Hitung Magnitude (Total Vector) ---
         $accel_total = sqrt(
             pow($latest->accel_x, 2) +
             pow($latest->accel_y, 2) +
@@ -103,43 +106,51 @@ class Gy87Controller extends Controller
             pow($latest->gyro_z, 2)
         );
 
-        // --- Sudut orientasi sederhana dari magnetometer ---
+        // --- 2. Hitung Compass Heading ---
         $heading = atan2($latest->mag_y, $latest->mag_x) * (180 / M_PI);
         if ($heading < 0) $heading += 360;
 
-        // --- Logika perilaku berdasarkan ambang batas empiris ---
+        // --- 3. Logika Klasifikasi Perilaku (UPDATED) ---
+        // Menggunakan "Priority Check" dan operator "OR" (||)
+        
         $status = "";
         $prilaku = "";
 
-        if ($accel_total < 0.15 && $gyro_total < 2) {
-            $status = "Diam";
-            $prilaku = "Istirahat / Berbaring";
-        }
-        elseif ($accel_total >= 0.15 && $accel_total < 0.5 && $gyro_total < 15) {
-            $status = "Ringan";
-            $prilaku = "Berdiri / Mengunyah";
-        }
-        elseif ($accel_total >= 0.5 && $gyro_total >= 15 && $gyro_total < 60) {
-            $status = "Aktif";
-            $prilaku = "Berjalan / Bergerak";
-        }
-        elseif ($gyro_total >= 60) {
+        // PRIORITAS 1: Gerakan Ekstrem (Gelisah/Lari)
+        // Indikator utama: Gyroscope berputar cepat
+        if ($gyro_total >= 60) {
             $status = "Sangat Aktif";
             $prilaku = "Gelisah / Berlari";
         }
+        // PRIORITAS 2: Gerakan Aktif (Jalan/Makan)
+        // Jika Accel cukup tinggi ATAU Gyro mendeteksi putaran tubuh
+        elseif ($accel_total >= 0.4 || $gyro_total >= 15) {
+            $status = "Aktif";
+            $prilaku = "Berjalan / Bergerak";
+        }
+        // PRIORITAS 3: Gerakan Ringan (Mengunyah/Berdiri)
+        // Ambang batas sensitif (0.08) untuk deteksi gerakan mikro
+        elseif ($accel_total >= 0.08 || $gyro_total >= 2) {
+            $status = "Ringan";
+            $prilaku = "Berdiri / Mengunyah";
+        }
+        // PRIORITAS 4: Fallback (Diam)
+        // Jika tidak memenuhi kriteria di atas, pasti Diam
         else {
-            $status = "Tidak Teridentifikasi";
-            $prilaku = "Data sensor tidak stabil";
+            $status = "Diam";
+            $prilaku = "Istirahat / Berbaring";
         }
 
         // --- Kembalikan hasil ke frontend atau API ---
         return response()->json([
             'status_aktivitas' => $status,
             'prilaku'          => $prilaku,
-            'temperature'      => $latest->temperature,
-            'bmp_temp'         => $latest->bmp_temp,
-            'pressure'         => $latest->pressure,
+            'temperature'      => number_format($latest->temperature, 2),
+            'bmp_temp'         => number_format($latest->bmp_temp, 2),
+            'pressure'         => number_format($latest->pressure, 2),
             'arah_gerak'       => round($heading, 2) . "°",
+            'raw_accel'        => number_format($accel_total, 2), // Debugging (opsional)
+            'raw_gyro'         => number_format($gyro_total, 2)   // Debugging (opsional)
         ]);
     }
 }
