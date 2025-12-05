@@ -306,23 +306,53 @@
     </footer>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-        <script>
-        function downloadExcel() {
-            let table = document.getElementById("tableLINGKUNGAN");
+<script>
+async function downloadExcel() {
 
-            // Clone table supaya bisa memodifikasi tanpa merusak tampilan web
-            let clonedTable = table.cloneNode(true);
+    // Ambil semua data dari server
+    const response = await fetch("/api/sensor-all");
+    const data = await response.json();
 
-            // Semua kolom yang memiliki atribut data-export="text" dipaksa menjadi teks
-            clonedTable.querySelectorAll("[data-export='text']").forEach(td => {
-                td.innerText = "'" + td.innerText; // tambahkan prefix ' agar Excel tidak convert
-            });
+    if (!data.length) {
+        alert("Tidak ada data yang bisa diexport!");
+        return;
+    }
 
-            // Generate Excel file
-            let workbook = XLSX.utils.table_to_book(clonedTable, { sheet: "Data LINGKUNGAN" });
-            XLSX.writeFile(workbook, "data_sensor_lingkungan.xlsx");
-        }
-        </script>
+    // Header kolom
+    const header = [
+        "ID",
+        "Tanggal",
+        "Waktu",
+        "NH₃ (ppm)",
+        "CO (ppm)",
+        "Suhu (°C)",
+        "Kelembaban (%)",
+        "Cahaya (lux)"
+    ];
+
+    // Format data sesuai kolom
+    const rows = data.map(item => [
+        item.id,
+        item.created_at.split("T")[0],                     // tanggal
+        item.created_at.split("T")[1].split(".")[0],       // waktu
+        item.nh3,
+        item.co,
+        item.temperature,
+        item.humidity,
+        item.cahaya
+    ]);
+
+    // Buat worksheet & workbook
+    const worksheet = XLSX.utils.aoa_to_sheet([header, ...rows]);
+    const workbook = XLSX.utils.book_new();
+
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Sensor Lingkungan");
+
+    // Export
+    XLSX.writeFile(workbook, "data_sensor_lingkungan.xlsx");
+}
+</script>
+
     <script>
         // Data dari Laravel
         const labels = @json($sensors->pluck('created_at')->map(fn($d) => $d->format('H:i')));

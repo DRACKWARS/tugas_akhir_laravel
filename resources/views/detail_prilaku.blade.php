@@ -312,21 +312,48 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-    function downloadExcel() {
-        let table = document.getElementById("tableMPU6050");
+async function downloadExcel() {
 
-        // Clone table supaya bisa memodifikasi tanpa merusak tampilan web
-        let clonedTable = table.cloneNode(true);
+    // Ambil data full dari server (bukan yang terpajang)
+    const response = await fetch("/mpu/export-json");
+    const data = await response.json();
 
-        // Semua kolom yang memiliki atribut data-export="text" dipaksa menjadi teks
-        clonedTable.querySelectorAll("[data-export='text']").forEach(td => {
-            td.innerText = "'" + td.innerText; // tambahkan prefix ' agar Excel tidak convert
-        });
-
-        // Generate Excel file
-        let workbook = XLSX.utils.table_to_book(clonedTable, { sheet: "Data MPU6050" });
-        XLSX.writeFile(workbook, "data_sensor_mpu6050.xlsx");
+    if (!data.length) {
+        alert("Tidak ada data untuk di-export!");
+        return;
     }
+
+    // Format data jadi array objek untuk Excel
+const exportData = data.map((row, i) => ({
+    No: i + 1,
+    Waktu: new Date(row.created_at).toLocaleString("id-ID", {
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit"
+    }),
+    Accel_X: row.accel_x,
+    Accel_Y: row.accel_y,
+    Accel_Z: row.accel_z,
+    Gyro_X: row.gyro_x,
+    Gyro_Y: row.gyro_y,
+    Gyro_Z: row.gyro_z,
+    Suhu: row.temperature
+}));
+
+
+    // Buat worksheet + workbook
+    const worksheet = XLSX.utils.json_to_sheet(exportData);
+    const workbook  = XLSX.utils.book_new();
+
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Data MPU6050");
+
+    // Download file
+    XLSX.writeFile(workbook, "data_sensor_mpu6050.xlsx");
+}
+
     </script>
     <script>
 

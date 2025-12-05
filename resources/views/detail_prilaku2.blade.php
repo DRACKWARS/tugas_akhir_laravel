@@ -257,22 +257,50 @@
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-function downloadExcel() {
-    let table = document.getElementById("tableGY87");
+async function downloadExcel() {
 
-    // Clone table supaya bisa memodifikasi tanpa merusak tampilan web
-    let clonedTable = table.cloneNode(true);
+    // Ambil semua data tanpa pagination
+    const response = await fetch("/api/gy87-all");
+    const data = await response.json();
 
-    // Semua kolom yang memiliki atribut data-export="text" dipaksa menjadi teks
-    clonedTable.querySelectorAll("[data-export='text']").forEach(td => {
-        td.innerText = "'" + td.innerText; // tambahkan prefix ' agar Excel tidak convert
-    });
+    if (!data.length) {
+        alert("Tidak ada data untuk diexport!");
+        return;
+    }
 
-    // Generate Excel file
-    let workbook = XLSX.utils.table_to_book(clonedTable, { sheet: "Data GY87" });
+    // Buat header Excel
+    const header = [
+        "ID",
+        "Tanggal",
+        "Waktu",
+        "Accel X","Accel Y","Accel Z",
+        "Gyro X","Gyro Y","Gyro Z",
+        "Mag X","Mag Y","Mag Z",
+        "Temp (°C)",
+        "Tekanan (Pa)"
+    ];
+
+    // Convert data ke format array 2D
+    const rows = data.map(item => [
+        item.id,
+        item.created_at.split("T")[0],
+        item.created_at.split("T")[1].split(".")[0],
+        item.accel_x, item.accel_y, item.accel_z,
+        item.gyro_x, item.gyro_y, item.gyro_z,
+        item.mag_x, item.mag_y, item.mag_z,
+        item.temperature,
+        item.pressure
+    ]);
+
+    // Gabungkan header + data
+    const worksheet = XLSX.utils.aoa_to_sheet([header, ...rows]);
+    const workbook = XLSX.utils.book_new();
+
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Data GY87");
     XLSX.writeFile(workbook, "data_sensor_gy87.xlsx");
 }
 </script>
+
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     const deleteButtons = document.querySelectorAll('.btn-delete');
