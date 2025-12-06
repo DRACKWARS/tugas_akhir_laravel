@@ -314,7 +314,6 @@
     <script>
 async function downloadExcel() {
 
-    // Ambil data full dari server (bukan yang terpajang)
     const response = await fetch("/mpu/export-json");
     const data = await response.json();
 
@@ -323,34 +322,52 @@ async function downloadExcel() {
         return;
     }
 
-    // Format data jadi array objek untuk Excel
-const exportData = data.map((row, i) => ({
-    No: i + 1,
-    Waktu: new Date(row.created_at).toLocaleString("id-ID", {
-        year: "numeric",
-        month: "2-digit",
-        day: "2-digit",
-        hour: "2-digit",
-        minute: "2-digit",
-        second: "2-digit"
-    }),
-    Accel_X: row.accel_x,
-    Accel_Y: row.accel_y,
-    Accel_Z: row.accel_z,
-    Gyro_X: row.gyro_x,
-    Gyro_Y: row.gyro_y,
-    Gyro_Z: row.gyro_z,
-    Suhu: row.temperature
-}));
+    const exportData = data.map((row, i) => {
 
+        // Hitung status dan perilaku (logika persis dari Blade)
+        const accelTotal = Math.abs(row.accel_x) + Math.abs(row.accel_y) + Math.abs(row.accel_z);
+        const gyroTotal  = Math.abs(row.gyro_x) + Math.abs(row.gyro_y) + Math.abs(row.gyro_z);
 
-    // Buat worksheet + workbook
+        let status = "";
+        let prilaku = "";
+
+        if (accelTotal < 0.2 && gyroTotal < 1) {
+            status  = "Diam";
+            prilaku = "Istirahat";
+        } else if (accelTotal > 0.5 && gyroTotal > 20) {
+            status  = "Aktif";
+            prilaku = "Berjalan / Makan";
+        } else {
+            status  = "Aktif";
+            prilaku = "Bergerak Ringan";
+        }
+
+        return {
+            No: i + 1,
+            Waktu: new Date(row.created_at).toLocaleString("id-ID", {
+                year: "numeric",
+                month: "2-digit",
+                day: "2-digit",
+                hour: "2-digit",
+                minute: "2-digit",
+                second: "2-digit"
+            }),
+            Accel_X: row.accel_x,
+            Accel_Y: row.accel_y,
+            Accel_Z: row.accel_z,
+            Gyro_X: row.gyro_x,
+            Gyro_Y: row.gyro_y,
+            Gyro_Z: row.gyro_z,
+            Suhu: row.temperature,
+            Status: status,
+            Perilaku: prilaku
+        };
+    });
+
     const worksheet = XLSX.utils.json_to_sheet(exportData);
     const workbook  = XLSX.utils.book_new();
-
     XLSX.utils.book_append_sheet(workbook, worksheet, "Data MPU6050");
 
-    // Download file
     XLSX.writeFile(workbook, "data_sensor_mpu6050.xlsx");
 }
 

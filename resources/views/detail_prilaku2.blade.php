@@ -259,7 +259,6 @@
 <script>
 async function downloadExcel() {
 
-    // Ambil semua data tanpa pagination
     const response = await fetch("/api/gy87-all");
     const data = await response.json();
 
@@ -268,7 +267,7 @@ async function downloadExcel() {
         return;
     }
 
-    // Buat header Excel
+    // HEADER TABEL
     const header = [
         "ID",
         "Tanggal",
@@ -277,22 +276,72 @@ async function downloadExcel() {
         "Gyro X","Gyro Y","Gyro Z",
         "Mag X","Mag Y","Mag Z",
         "Temp (°C)",
-        "Tekanan (Pa)"
+        "Tekanan (Pa)",
+        "Status",
+        "Perilaku",
+        "Arah Gerak (°)"
     ];
 
-    // Convert data ke format array 2D
-    const rows = data.map(item => [
-        item.id,
-        item.created_at.split("T")[0],
-        item.created_at.split("T")[1].split(".")[0],
-        item.accel_x, item.accel_y, item.accel_z,
-        item.gyro_x, item.gyro_y, item.gyro_z,
-        item.mag_x, item.mag_y, item.mag_z,
-        item.temperature,
-        item.pressure
-    ]);
+    // PROSES PERHITUNGAN LOGIKA STATUS + PERILAKU + ARAH
+    const rows = data.map(item => {
 
-    // Gabungkan header + data
+        // Hitung Magnitude (SAMA PERSIS DENGAN BLADE)
+        const accel = Math.sqrt(
+            Math.pow(item.accel_x, 2) +
+            Math.pow(item.accel_y, 2) +
+            Math.pow(item.accel_z, 2)
+        );
+
+        const gyro = Math.sqrt(
+            Math.pow(item.gyro_x, 2) +
+            Math.pow(item.gyro_y, 2) +
+            Math.pow(item.gyro_z, 2)
+        );
+
+        // Kompas Heading (SAMA DENGAN BLADE)
+        let heading = Math.atan2(item.mag_y, item.mag_x) * (180 / Math.PI);
+        if (heading < 0) heading += 360;
+
+        // LOGIKA STATUS & PERILAKU (100% SAMA DENGAN BLADE)
+        let status = "";
+        let prilaku = "";
+
+        if (gyro >= 60) {
+            status  = "Sangat Aktif";
+            prilaku = "Gelisah / Berlari";
+        } 
+        else if (accel >= 0.4 || gyro >= 15) {
+            status  = "Aktif";
+            prilaku = "Berjalan / Bergerak";
+        }
+        else if (accel >= 0.08 || gyro >= 2) {
+            status  = "Ringan";
+            prilaku = "Berdiri / Mengunyah";
+        }
+        else {
+            status  = "Diam";
+            prilaku = "Istirahat / Berbaring";
+        }
+
+        // Format tanggal & waktu
+        const date = item.created_at.split("T")[0];
+        const time = item.created_at.split("T")[1].split(".")[0];
+
+        return [
+            item.id,
+            date, time,
+            item.accel_x, item.accel_y, item.accel_z,
+            item.gyro_x, item.gyro_y, item.gyro_z,
+            item.mag_x, item.mag_y, item.mag_z,
+            item.temperature,
+            item.pressure,
+            status,
+            prilaku,
+            heading.toFixed(2)
+        ];
+    });
+
+    // GENERATE EXCEL
     const worksheet = XLSX.utils.aoa_to_sheet([header, ...rows]);
     const workbook = XLSX.utils.book_new();
 
@@ -300,6 +349,7 @@ async function downloadExcel() {
     XLSX.writeFile(workbook, "data_sensor_gy87.xlsx");
 }
 </script>
+
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {

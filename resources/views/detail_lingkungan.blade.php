@@ -307,6 +307,33 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
+    function hitungStatus(item) {
+    let status = "Normal";
+
+    // NH3
+    if (item.nh3 > 50) {
+        status = "Bahaya (NH₃ Tinggi)";
+    } else if (item.nh3 > 25) {
+        status = "Waspada (NH₃ Sedang)";
+    }
+
+    // CO
+    if (item.co > 50) {
+        status = "Bahaya (CO Tinggi)";
+    } else if (item.co > 25) {
+        status = "Waspada (CO Sedang)";
+    }
+
+    // Suhu
+    if (item.temperature >= 34 || item.temperature <= 15) {
+        status = "Bahaya (Suhu Ekstrem)";
+    } else if (item.temperature >= 31 && item.temperature <= 33) {
+        status = "Waspada (Suhu Tinggi)";
+    }
+
+    return status;
+}
+
 async function downloadExcel() {
 
     // Ambil semua data dari server
@@ -327,7 +354,8 @@ async function downloadExcel() {
         "CO (ppm)",
         "Suhu (°C)",
         "Kelembaban (%)",
-        "Cahaya (lux)"
+        "Cahaya (lux)",
+        "Status"
     ];
 
     // Format data sesuai kolom
@@ -339,7 +367,8 @@ async function downloadExcel() {
         item.co,
         item.temperature,
         item.humidity,
-        item.cahaya
+        item.cahaya,
+        hitungStatus(item)
     ]);
 
     // Buat worksheet & workbook
